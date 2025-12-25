@@ -6,7 +6,7 @@ import axios from "axios";
 
 function Register() {
   const REACT_APP_GOOGLE_CLIENT_ID = '937549199111-6qi6odvq95bjh6s2hvkvo3ivcs70n5rd.apps.googleusercontent.com';
-  const REACT_APP_GOGGLE_REDIRECT_URL_ENDPOINT = "https://agroharvest.solovers.tech";
+  const REACT_APP_GOGGLE_REDIRECT_URL_ENDPOINT = "https://vijayanand-cms.vercel.app";
   const [username, setUsername] = useState(localStorage.getItem('first_name'));
   const navigate = useNavigate();
   const isAuthenticated = localStorage.getItem('token');
