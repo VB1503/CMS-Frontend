@@ -30,7 +30,7 @@ const MapComponent = () => {
     const fetchUserPolygons = async () => {
       try {
         const userId = localStorage.getItem("userid");
-        const response = await axios.get(`https://agroharvest.onrender.com/landmarks/${userId}/`);
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
         setUserPolygons(response.data);
         localStorage.setItem("userlands", JSON.stringify(response.data));
         
@@ -172,7 +172,7 @@ const MapComponent = () => {
   // Function to handle sending coordinates to the endpoint
   const sendCoordinates = async () => {
     try {
-      const response = await axios.post('https://agroharvest.onrender.com/landmark/', {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE}/landmark/`, {
         user: localStorage.getItem("userid"),
         coordinates: polygonCoords
       });
@@ -190,7 +190,7 @@ const MapComponent = () => {
   
       // Refresh the page or userPolygons to update the map with the new polygon
       const userId = localStorage.getItem("userid");
-      const updatedPolygons = await axios.get(`https://agroharvest.onrender.com/landmarks/${userId}/`);
+      const updatedPolygons = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
       setUserPolygons(updatedPolygons.data);
       localStorage.setItem("userlands", JSON.stringify(updatedPolygons.data));
   
@@ -208,7 +208,7 @@ const handleDeleteLand = async () => {
 
   if (window.confirm("Are you sure you want to delete this land?")) {
     try {
-      await axios.delete(`https://agroharvest.onrender.com/landmark/delete/${userId}/${selectedLand}/`);
+      await axios.delete(`${import.meta.env.VITE_API_BASE}/landmark/delete/${userId}/${selectedLand}/`);
 
       // Remove the selected land from the userPolygons and update local storage
       const updatedPolygons = userPolygons.filter(polygon => polygon.landId !== selectedLand);

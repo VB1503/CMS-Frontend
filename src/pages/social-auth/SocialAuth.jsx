@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 import "./index.css";
 
-const  BACKEND_API_URL = "https://agroharvest.onrender.com"
+const BACKEND_API_URL = import.meta.env.VITE_API_BASE;
 
 const SocialAuth = () => {
   let location = useLocation();

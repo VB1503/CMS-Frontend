@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const FertilizerRecommendationForm = () => {
     const [fertilizer,setFertilizer]=useState('')
     const [loading, setLoading] = useState(false);
+    const [userLands, setUserLands] = useState([]);
+    const [selectedLand, setSelectedLand] = useState("");
+    const soilCropMap = {0: ['Cotton', 'Oil seeds', 'Sugarcane', 'Millets'],
+                        1: ['Paddy', 'Pulses'],
+                        2: ['Sugarcane', 'Wheat', 'Cotton'],
+                        3: ['Tobacco', 'Cotton', 'Ground Nuts'],
+                        4: ['Maize', 'Barley', 'Millets']};
+
     const [formData, setFormData] = useState({
+        user: parseInt(localStorage.getItem("userid")),
+        landId: '',
         temperature: '',
         humidity: '',
         moisture: '',
@@ -14,12 +24,33 @@ const FertilizerRecommendationForm = () => {
         phosphorous: '',
         potassium: ''
     });
+    useEffect(() => {
+    const fetchUserLands = async () => {
+      try {
+        const userId = localStorage.getItem("userid");
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
+        setUserLands(response.data);
+      } catch (error) {
+        console.error("Error fetching user lands:", error);
+      }
+    };
+
+    fetchUserLands();
+  }, []);
+ console.log(selectedLand)
+    useEffect(() => {
+            setFormData(prev => ({
+                ...prev,
+                crop_type: ""
+            }));
+        }, [formData.soil_type]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('https://agroharvest.onrender.com/fertilizer/', formData);
+            console.log(formData)
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE}/fertilizer/`, formData);
             console.log(response.data);
             setFertilizer(response.data.recommendation)
             // Handle response data as needed
@@ -33,21 +64,50 @@ const FertilizerRecommendationForm = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+            const { name, value } = e.target;
+
+            // Special handling for landId
+            if (name === 'landId') {
+                setSelectedLand(value); // Update selectedLand separately
+                setFormData({ ...formData, landId: value }); // Update formData
+            } else {
+                setFormData({ ...formData, [name]: value });
+            }
+        };
+
+    const filteredCrops = formData.soil_type
+      ? soilCropMap[formData.soil_type] || []
+      : [];
 
     return (
-        <div className='flex flex-col-reverse gap-[10px] md:flex-row'>
+        <div className='flex flex-col-reverse gap-6 md:gap-8 md:flex-row w-full  md:items-stretch'>
 
-        <div className="max-w-md md:max-w-xl mx-auto p-8  rounded-lg shadow-sm">
-            <h2 className="text-2xl mb-6 text-center font-bold text-black mt-4">
+        <div className="flex-1 min-w-0 w-full md:w-1/2 max-w-md md:max-w-none mx-auto md:mx-0 p-8 rounded-lg shadow-sm mt-0 md:mt-10">
+            <h2 className="mb-10 text-center text-3xl font-bold text-green-700">
                 Get informed advice on fertilizer based on soil
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                     <label htmlFor="land" className="text-lg font-bold">
+                        Choose Land
+                    </label>
+                    <select
+                        id="land"
+                        name="landId"
+                        value={selectedLand}
+                        onChange={handleChange}
+                        required
+                        className="input"
+                    >
+                        <option value="">Select Land</option>
+                        {userLands.map((land, index) => (
+                        <option key={index} value={land.landId}>{`Land ${index + 1}`}</option>
+                        ))}
+                    </select>
+                </div>
                 <div>
                     <label htmlFor="temperature" className="text-lg font-bold">
-                        Temperature
+                        Temperature (°C)
                     </label>
                     <input
                         type="number"
@@ -62,7 +122,7 @@ const FertilizerRecommendationForm = () => {
                 </div>
                 <div>
                     <label htmlFor="humidity" className="text-lg font-bold">
-                        Humidity
+                        Humidity (30 to 80)%
                     </label>
                     <input
                         type="number"
@@ -77,7 +137,7 @@ const FertilizerRecommendationForm = () => {
                 </div>
                 <div>
                     <label htmlFor="moisture" className="text-lg font-bold">
-                        Moisture
+                        Moisture (25 to 70)%
                     </label>
                     <input
                         type="number"
@@ -102,6 +162,7 @@ const FertilizerRecommendationForm = () => {
                         className="block w-full px-4 py-2 mt-2 text-lg border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                         required
                     >
+                        <option value="">Select Soil Type</option>
                         <option value="0">Sandy</option>
                         <option value="1">Loamy</option>
                         <option value="2">Black</option>
@@ -119,24 +180,23 @@ const FertilizerRecommendationForm = () => {
                         value={formData.crop_type}
                         onChange={handleChange}
                         className="block w-full px-4 py-2 mt-2 text-lg border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        disabled={!formData.soil_type}
                         required
                     >
-                        <option value="0">Maize</option>
-                        <option value="1">Sugarcane</option>
-                        <option value="2">Cotton</option>
-                        <option value="3">Tobacco</option>
-                        <option value="4">Paddy</option>
-                        <option value="5">Barley</option>
-                        <option value="6">Wheat</option>
-                        <option value="7">Millets</option>
-                        <option value="8">Oil seeds</option>
-                        <option value="9">Pulses</option>
-                        <option value="10">Ground Nuts</option>
+                        <option value="">
+                        {formData.soil_type ? "Select Crop" : "Select Soil First"}
+                        </option>
+
+                        {filteredCrops.map((crop, index) => (
+                        <option key={index} value={crop}>
+                            {crop.charAt(0).toUpperCase() + crop.slice(1)}
+                        </option>
+                        ))}
                     </select>
                 </div>
                 <div>
                     <label htmlFor="nitrogen" className="text-lg font-bold">
-                        Nitrogen
+                        Nitrogen (mg/kg or ppm)
                     </label>
                     <input
                         type="number"
@@ -151,7 +211,7 @@ const FertilizerRecommendationForm = () => {
                 </div>
                 <div>
                     <label htmlFor="phosphorous" className="text-lg font-bold">
-                        Phosphorous
+                        Phosphorous (mg/kg or ppm)
                     </label>
                     <input
                         type="number"
@@ -166,7 +226,7 @@ const FertilizerRecommendationForm = () => {
                 </div>
                 <div>
                     <label htmlFor="potassium" className="text-lg font-bold">
-                        Potassium
+                        Potassium (mg/kg or ppm)
                     </label>
                     <input
                         type="number"
@@ -179,7 +239,7 @@ const FertilizerRecommendationForm = () => {
                         required
                     />
                 </div>
-                <div className="flex justify-center">
+                <div className="col-span-full flex justify-center">
                     <button
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 mt-4 text-lg font-bold rounded-lg focus:outline-none focus:shadow-outline"
@@ -196,14 +256,11 @@ const FertilizerRecommendationForm = () => {
       )}
         </div>
         {fertilizer &&
-        <div className="flex items-center container mx-auto my-16">
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 justify-items-center">
-                <div className="py-4">
-                    <h1 className='text-center text-[28px] font-bold'>{fertilizer.name}</h1>
-                    <div className="bg-blended-almond py-4 px-6 rounded-lg shadow-md">
-                       {fertilizer.fertilizer}
-                    </div>
-                </div>
+        <div className="flex-1 min-w-0 w-full md:w-1/2 mt-12 md:mt-0 bg-gradient-to-br md:pl-0 to-indigo-50 p-8 rounded-lg md:rounded-none  flex flex-col justify-start md:justify-center">
+            <h2 className="text-2xl font-bold text-blue-700 mb-4 text-center">💊 Recommended Fertilizer</h2>
+            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 overflow-hidden">
+                <h3 className="text-xl font-bold text-blue-600 mb-3 break-words">{fertilizer.name}</h3>
+                <p className="text-gray-700 leading-relaxed text-base break-words">{fertilizer.fertilizer}</p>
             </div>
         </div>
 }

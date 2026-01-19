@@ -44,7 +44,7 @@ const ProfileUpdate = () => {
     try {
       const userId = localStorage.getItem('userid');
       const res = await axios.delete(
-        `https://agroharvest.onrender.com/api/v1/auth/update-user/${userId}/`,
+        `${import.meta.env.VITE_API_BASE}/api/v1/auth/update-user/${userId}/`,
        // Pass updated userData here
         {
           headers: {
@@ -76,7 +76,7 @@ const ProfileUpdate = () => {
   const handleChangePassword = async(e)=>{
     e.preventDefault()
     if (email) {
-      const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/changePassword/', {'email': email})
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/changePassword/`, {'email': email})
       console.log(res)
        if (res.status === 200) {
         const response = res.data
@@ -161,7 +161,7 @@ const ProfileUpdate = () => {
     try {
       const userId = localStorage.getItem('userid');
       const res = await axios.patch(
-        `https://agroharvest.onrender.com/api/v1/auth/update-user/${userId}/`,
+        `${import.meta.env.VITE_API_BASE}/api/v1/auth/update-user/${userId}/`,
         userData, // Pass updated userData here
         {
           headers: {
@@ -228,7 +228,7 @@ const ProfileUpdate = () => {
     try {
       const userId = localStorage.getItem('userid');
       const res = await axios.patch(
-        `https://agroharvest.onrender.com/api/v1/auth/update-user/${userId}/`,
+        `${import.meta.env.VITE_API_BASE}/api/v1/auth/update-user/${userId}/`,
         { 'profile_pic': profile },
         {
          headers: {
@@ -254,7 +254,7 @@ const ProfileUpdate = () => {
       const userId = localStorage.getItem("userid");
       console.log(phone_number)
       const res = await axios.post(
-        'https://agroharvest.onrender.com/api/auth/phoneNumber/',
+        `${import.meta.env.VITE_API_BASE}/api/auth/phoneNumber/`,
         { 'user': parseInt(userId, 10), "phone_number": Phone},
         {
          headers: {

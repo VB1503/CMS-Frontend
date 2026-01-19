@@ -15,7 +15,8 @@ import Register from './pages/auth/Register';
 import ForgetPassword from './pages/auth/ForgetPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import ProfileUpdate from './components/user/UpdateProfile';
-
+import UserLandsDisplay from './pages/UserLandDisplay';
+import PredictionHistory from './pages/PredictionHistory';
 import MapComponent from './components/Map/MapDrawer';
 import CropRecommendationForm from "./pages/CropRecommendation"
 import CropYieldPredictionForm from './pages/CropYield';
@@ -33,6 +34,8 @@ const router = createBrowserRouter(
       <Route path="/crs" element={<CropRecommendationForm />} />
       <Route path="/irrigation" element={<IrrigationSystem />} />
       <Route path="/fertilizer" element={<FertilizerRecommendationForm />} />
+      <Route path="/mylands" element={<UserLandsDisplay />} />
+      <Route path="/predictions" element={<PredictionHistory />} />
       <Route path="/fertilizerres" element={<FertilizerRecommendationResult />} />
       <Route path="/cys" element={<CropYieldPredictionForm />} />
       <Route path="/register" element={<Register />} />

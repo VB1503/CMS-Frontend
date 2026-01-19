@@ -25,7 +25,7 @@ const VerifyOtp = () => {
     e.preventDefault();
     setResend(true);
     if(phone_number){
-        const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/resendOtp/', { 'user': parseInt(userId, 10), 'phone_number': phone_number });
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/resendOtp/`, { 'user': parseInt(userId, 10), 'phone_number': phone_number });
         const resp = res.data;
     }
 }
@@ -34,7 +34,7 @@ const VerifyOtp = () => {
     if (otp.length === 6 && /^\d+$/.test(otp)) {
       const userInt = parseInt(userId, 10);
       try {
-        const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/verify-phone/', { 'user': userInt, 'otp': otp });
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/verify-phone/`, { 'user': userInt, 'otp': otp });
         const resp = res.data;
         if (res.status === 200) {
           localStorage.setItem('is_verified', true)

@@ -17,7 +17,7 @@ function ForgetPassword() {
         return;
       }
       try {
-        const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/password-reset/', { email });
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/password-reset/`, { email });
         if (res.status === 200) {
           console.log(res.data);
           navigate("/");

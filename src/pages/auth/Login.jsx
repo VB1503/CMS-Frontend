@@ -74,7 +74,7 @@ const Login = () => {
           setLoading(true);
             try {
               if (Object.values(errors).every(error => error === '')) {
-              const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/login/', logindata);
+              const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/login/`, logindata);
               const response = res.data;
               if (res.status === 200) {
                 localStorage.setItem('token', JSON.stringify(response.access_token));

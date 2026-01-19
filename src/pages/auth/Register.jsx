@@ -64,7 +64,7 @@ function Register() {
     try {
       // Check if there are any errors before submitting the form
       if (Object.values(errors).every(error => error === '')) {
-        const response = await axios.post('https://agroharvest.onrender.com/api/v1/auth/register/', formdata);
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/register/`, formdata);
         const result = response.data;
         if (response.status === 201) {
           localStorage.setItem('userid', result.data.id);

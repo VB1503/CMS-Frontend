@@ -2,39 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MdOutlineKeyboardDoubleArrowUp,MdOutlineKeyboardDoubleArrowDown  } from "react-icons/md";
+import { IoMdArrowDropdown } from "react-icons/io";
 const Header = () => {
   const [current, setCurrent] = useState('h');
   const [isOpen, setOpen] = useState(true);
+  const [isPredictionsOpen, setIsPredictionsOpen] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState(null);
   const closeMenu =() => setOpen(true);
   const navigate=useNavigate()
   const [username, setUsername] = useState(localStorage.getItem('first_name'))
   const [profile, setProfile] = useState(localStorage.getItem('profile_pic'))
   const [email, setEmail] = useState(localStorage.getItem('email'))
-  const [subscription, setSubscription] = useState(null);
-  const sendSubscriptionToServer = async (subscription) => {
-    try {
-      // Send subscription object to your server using Axios
-      const response = await axios.post('https://agroharvest.onrender.com/send-push-notification/', subscription, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      console.log('Subscription sent to server');
-    } catch (error) {
-      console.error('Error sending subscription to server:', error);
-    }
-  };
   const [isExpanded, setIsExpanded] = useState(false); // State to manage toggle
 
   const toggleSlide = () => {
     setIsExpanded(!isExpanded);
   };
+  
+  const togglePredictions = () => {
+    setIsPredictionsOpen(!isPredictionsOpen);
+  };
+  
+  const handlePredictionsMouseEnter = () => {
+    if (window.innerWidth > 1090) {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+      setIsPredictionsOpen(true);
+    }
+  };
+  
+  const handlePredictionsMouseLeave = () => {
+    if (window.innerWidth > 1090) {
+      const timeout = setTimeout(() => {
+        setIsPredictionsOpen(false);
+      }, 200); // 200ms delay before closing
+      setHoverTimeout(timeout);
+    }
+  };
+  
   const handleSubmit = async(e)=>{
     e.preventDefault()
     closeMenu();
     if (email) {
-      const res = await axios.post('https://agroharvest.onrender.com/api/v1/auth/changePassword/', {'email': email})
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/changePassword/`, {'email': email})
       console.log(res)
        if (res.status === 200) {
         const response = res.data
@@ -89,9 +100,22 @@ const Header = () => {
           <ul className={`navigation  ${isExpanded ? 'flex' : 'none'}`}>
             <li onClick={toggleSlide}><Link to='/'>Home</Link></li>
             <li onClick={toggleSlide}><Link to='LSM/'>Register Your Land</Link></li>
-            <li onClick={toggleSlide}><Link to='crs/'>Crop Recommendation System</Link></li>
-            <li onClick={toggleSlide}><Link to='cys/'>Crop Yield Prediction</Link></li>
-            <li onClick={toggleSlide}><Link to='fertilizer/'>Fertilizers</Link></li>
+            <li 
+              className='predictions-dropdown'
+              onMouseEnter={handlePredictionsMouseEnter}
+              onMouseLeave={handlePredictionsMouseLeave}
+            >
+              <div className='predictions-toggle' onClick={togglePredictions}>
+                <span>Predictions</span>
+                <IoMdArrowDropdown className={`dropdown-icon ${isPredictionsOpen ? 'rotate' : ''}`} />
+              </div>
+              <ul className={`predictions-submenu ${isPredictionsOpen ? 'show' : ''}`}>
+                <li onClick={toggleSlide}><Link to='crs/'>Crop Recommendation</Link></li>
+                <li onClick={toggleSlide}><Link to='cys/'>Crop Yield Prediction</Link></li>
+                <li onClick={toggleSlide}><Link to='fertilizer/'>Fertilizer Recommendation</Link></li>
+              </ul>
+            </li>
+            <li onClick={toggleSlide}><Link to='mylands/'>My Lands</Link></li>
             <li onClick={toggleSlide}><Link to='irrigation/'>Irrigation</Link></li>
           </ul>
 }

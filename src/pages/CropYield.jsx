@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { seasonCropMap } from './SeasonCropMap';
 function CropYieldPredictionForm() {
     const [userLands, setUserLands] = useState([]);
     const [selectedLand, setSelectedLand] = useState("");
@@ -10,7 +10,6 @@ function CropYieldPredictionForm() {
         landId: '', // Initialize landId as empty string
         year: '',
         season: '',
-        month: '',
         crop: '',
         area: ''
     });
@@ -22,7 +21,7 @@ function CropYieldPredictionForm() {
         const fetchUserLands = async () => {
             try {
                 const userId = localStorage.getItem("userid");
-                const response = await axios.get(`https://agroharvest.onrender.com/landmarks/${userId}/`);
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
                 setUserLands(response.data);
             } catch (error) {
                 console.error("Error fetching user lands:", error);
@@ -31,6 +30,14 @@ function CropYieldPredictionForm() {
 
         fetchUserLands();
     }, []);
+
+    useEffect(() => {
+        setFormData(prev => ({
+            ...prev,
+            crop: ""
+        }));
+    }, [formData.season]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,33 +54,37 @@ function CropYieldPredictionForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        axios.post('https://agroharvest.onrender.com/cropyield/', formData)
+        setResponseInfo(null);
+        console.log(formData);
+        axios.post(`${import.meta.env.VITE_API_BASE}/cropyield/`, formData)
             .then(response => {
+                console.log("Full Response:", response);
+                console.log("Response Data:", response.data);
+                console.log("Response Data Type:", typeof response.data);
+                console.log("Response Data Keys:", Object.keys(response.data));
                 setResponseInfo(response.data);
-                setLoading(false);
                 setError(null);
             })
             .catch(error => {
+                console.error("Error:", error);
                 setError(error.message);
                 setResponseInfo(null);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 
-    const monthsOptions = Array.from({ length: 10 }, (_, index) => ({
-        value: index + 3,
-        label: `${index + 3} months`
-    }));
-    const crops = [
-        'rice', 'banana', 'maize', 'mungbean', 'cotton', 'chickpea',
-        'grapes', 'mango', 'orange', 'papaya', 'pomegranate', 'pigeonpeas',
-        'jute', 'blackgram', 'mothbeans', 'coffee', 'watermelon', 'lentil',
-        'kidneybeans', 'apple'
-    ];
+    const filteredCrops = formData.season
+  ? seasonCropMap[formData.season] || []
+  : [];
+
+
 
     return (
-        <div className="max-w-md md:max-w-4xl mx-auto p-8 mt-10  ">
-            <h2 className="text-2xl mb-6 text-green-800 text-center font-bold">Crop Yield Prediction</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="max-w-md md:max-w-3xl lg:max-w-5xl mx-auto p-8 mt-10">
+            <h2 className="mb-6 text-center font-bold text-3xl text-green-700">Crop Yield Prediction</h2>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 <div >
                     <label htmlFor="land" className="label text-[18px] font-bold">
                         Choose Land
@@ -118,37 +129,38 @@ function CropYieldPredictionForm() {
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="month" className="block text-[18px] font-bold">Forecast Duration:</label>
-                    <select id="month" name="month" value={formData.month} onChange={handleChange} className="w-full px-2 py-2 text-md border rounded-lg focus:outline-none focus:border-blue-500" required>
-                        <option value="">Select Forecast Duration</option>
-                        {monthsOptions.map(option => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
                     <label htmlFor="crop_type" className="block text-[18px] font-bold">
                         Crop:
                     </label>
+
                     <select
                         id="crop_type"
                         name="crop"
                         value={formData.crop}
                         onChange={handleChange}
                         className="block w-full px-2 py-2 mt-2 text-md border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        disabled={!formData.season}
                         required
                     >
-                        <option value="">Select Crop</option>
-                        {crops.map((crop, index) => (
-                            <option key={index} value={index}>{crop.charAt(0).toUpperCase() + crop.slice(1)}</option>
+                        <option value="">
+                        {formData.season ? "Select Crop" : "Select Season First"}
+                        </option>
+
+                        {filteredCrops.map((crop, index) => (
+                        <option key={index} value={crop}>
+                            {crop.charAt(0).toUpperCase() + crop.slice(1)}
+                        </option>
                         ))}
                     </select>
-                </div>
+                    </div>
+
                 <div>
                     <label htmlFor="area" className="block text-[18px] font-bold">Area in hectare:</label>
                     <input type="number" id="area" name="area" value={formData.area} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder='Enter the Area size in Hectare'required />
                 </div>
-                <button type="submit" className="w-full bg-green-500 text-white py-2 rounded-lg">Submit</button>
+                <div className="col-span-full flex justify-center">
+                    <button type="submit" className="bg-green-500 text-white px-6 py-2 mt-2 rounded-lg">Submit</button>
+                </div>
             </form>
             {/* Preloader overlay */}
       {loading && (
@@ -157,11 +169,18 @@ function CropYieldPredictionForm() {
         </div>
       )}
             {responseInfo && (
-                <div className="mt-8">
-                    <h3 className="text-xl font-semibold">Yield Prediction and Production Rate</h3>
-                    <p><strong>Production:</strong> {responseInfo.production} <strong>kg</strong></p>
-                    <p><strong>Yield:</strong> {responseInfo.yield_per_hectare} <strong>kg/ha</strong></p>
-                    {/* Add additional content related to yield prediction and production rate */}
+                <div className="mt-12 bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-lg shadow-lg border-2 border-green-200">
+                    <h3 className="text-2xl font-bold text-green-700 mb-6 text-center">🌾 Yield Prediction & Production Rate</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                            <p className="text-gray-600 text-sm font-semibold mb-2">📦 Production</p>
+                            <p className="text-3xl font-bold text-blue-600">{responseInfo.production || responseInfo?.data?.production || 'N/A'} <span className="text-lg text-gray-500">kg</span></p>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                            <p className="text-gray-600 text-sm font-semibold mb-2">📊 Yield</p>
+                            <p className="text-3xl font-bold text-green-600">{responseInfo.yield_per_hectare || responseInfo?.data?.yield_per_hectare || 'N/A'} <span className="text-lg text-gray-500">kg/ha</span></p>
+                        </div>
+                    </div>
                 </div>
             )}
 

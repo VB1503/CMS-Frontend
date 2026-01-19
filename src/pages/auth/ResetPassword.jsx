@@ -47,7 +47,7 @@ const data={
  const handleSubmit =async (e)=>{
     e.preventDefault()
     if (data) {
-      const res = await axios.patch('https://agroharvest.onrender.com/api/v1/auth/set-new-password/', data)
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE}/api/v1/auth/set-new-password/`, data)
       const response = res.data
       
       if (res.status === 200) {
