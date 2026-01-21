@@ -176,7 +176,7 @@ const HomePage = () => {
         </div>
         <div className="footer-bottom">
           <p className="footer-copyright">© {new Date().getFullYear()} AgroHarvest. Built with passion for agriculture.</p>
-          <div className="footer-badge">Made by Vijay Anand</div>
+          <div className="footer-badge">Designed by Vijay Anand</div>
         </div>
       </footer>
 

@@ -109,9 +109,9 @@ const IrrigationSystem = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50 px-4 md:px-8 py-8">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-10">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3">
           <FaWater className="text-3xl text-blue-600" />
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl pb-2 md:pb-6 md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-emerald-700 bg-clip-text text-transparent">
             Irrigation Management
           </h1>
         </div>
