@@ -12,6 +12,19 @@ const LandCard = ({ land, index, onClick, locationName }) => {
   const centerLat = land.coordinates.reduce((sum, coord) => sum + coord.lat, 0) / land.coordinates.length;
   const centerLng = land.coordinates.reduce((sum, coord) => sum + coord.lng, 0) / land.coordinates.length;
 
+  // Calculate bounds for auto-fitting the map
+  const calculateBounds = () => {
+    const lats = land.coordinates.map(c => c.lat);
+    const lngs = land.coordinates.map(c => c.lng);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    return [[minLat, minLng], [maxLat, maxLng]];
+  };
+
+  const bounds = calculateBounds();
+
   // Calculate area and side measurements with midpoints
   const calculateMeasurements = () => {
     const sideMeasurements = [];
@@ -86,13 +99,13 @@ const LandCard = ({ land, index, onClick, locationName }) => {
   return (
     <div 
       onClick={onClick}
-      className="cursor-pointer bg-white rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border-2 border-gray-200 hover:border-blue-500"
+      className="bg-gradient-to-r from-blue-50 to-indigo-50 cursor-pointer bg-white rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border-2 border-gray-200 hover:border-blue-500"
     >
       {/* Map Image - Full Card Size */}
       <div className="w-full h-64 relative">
         <MapContainer
-          center={[centerLat, centerLng]}
-          zoom={18}
+          bounds={bounds}
+          boundsOptions={{ padding: [50, 50] }}
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
           dragging={false}
@@ -155,45 +168,61 @@ const UserLandsDisplay = () => {
   const [locationNames, setLocationNames] = useState({});
   const navigate = useNavigate();
 
+  // Derive a readable location name from stored location_details
+const deriveLocationName = (details) => {
+  if (!details) return 'Location unavailable';
+
+  const isValid = (v) => v && v !== 'Data not available';
+
+  const parts = [];
+
+  // Area first
+  if (isValid(details.area)) {
+    parts.push(details.area);
+  }
+
+  // District or State with PIN
+  if (isValid(details.district)) {
+    const districtWithPin = isValid(details.postcode)
+      ? `${details.district} - ${details.postcode}`
+      : details.district;
+
+    parts.push(districtWithPin);
+  } else if (isValid(details.state)) {
+    const stateWithPin = isValid(details.postcode)
+      ? `${details.state} - ${details.postcode}`
+      : details.state;
+
+    parts.push(stateWithPin);
+  }
+
+  // If district was used above, still add state separately
+  if (isValid(details.district) && isValid(details.state)) {
+    parts.push(details.state);
+  }
+
+  // Country last
+  if (isValid(details.country)) {
+    parts.push(details.country);
+  }
+
+  return parts.length ? parts.join(', ') : 'Location unavailable';
+};
+
+
+
   useEffect(() => {
     const fetchUserLands = async () => {
       try {
         const userId = localStorage.getItem("userid");
         const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
         setUserLands(response.data);
-        
-        // Fetch location names for each land
-        response.data.forEach(async (land) => {
-          const centerLat = land.coordinates.reduce((sum, coord) => sum + coord.lat, 0) / land.coordinates.length;
-          const centerLng = land.coordinates.reduce((sum, coord) => sum + coord.lng, 0) / land.coordinates.length;
-          
-          try {
-            const geoResponse = await axios.get(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${centerLat}&lon=${centerLng}`
-            );
-            
-            const address = geoResponse.data.address;
-            // Try to get meaningful location name (road, suburb, neighbourhood, or city)
-            const locationName = address.road || 
-                                address.suburb || 
-                                address.neighbourhood || 
-                                address.village || 
-                                address.town || 
-                                address.city || 
-                                'Unknown Location';
-            
-            setLocationNames(prev => ({
-              ...prev,
-              [land.landId]: locationName
-            }));
-          } catch (error) {
-            console.error(`Error fetching location for land ${land.landId}:`, error);
-            setLocationNames(prev => ({
-              ...prev,
-              [land.landId]: 'Location unavailable'
-            }));
-          }
+        // Use stored location_details from the API response to derive names
+        const names = {};
+        response.data.forEach((land) => {
+          names[land.landId] = deriveLocationName(land.location_details);
         });
+        setLocationNames(names);
       } catch (error) {
         console.error("Error fetching user lands:", error);
       } finally {

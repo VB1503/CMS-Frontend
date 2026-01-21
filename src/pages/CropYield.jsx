@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { seasonCropMap } from './SeasonCropMap';
+import { FaChartLine, FaSeedling, FaCalendarAlt, FaCloudSun, FaMapMarkedAlt, FaRulerCombined } from 'react-icons/fa';
+import { GiFarmTractor, GiWheat } from 'react-icons/gi';
+
 function CropYieldPredictionForm() {
     const [userLands, setUserLands] = useState([]);
     const [selectedLand, setSelectedLand] = useState("");
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         user: parseInt(localStorage.getItem("userid")),
-        landId: '', // Initialize landId as empty string
+        landId: '',
         year: '',
         season: '',
         crop: '',
         area: ''
     });
-    console.log(selectedLand)
     const [responseInfo, setResponseInfo] = useState(null);
     const [error, setError] = useState(null);
 
@@ -38,14 +40,12 @@ function CropYieldPredictionForm() {
         }));
     }, [formData.season]);
 
-
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // Special handling for landId
         if (name === 'landId') {
-            setSelectedLand(value); // Update selectedLand separately
-            setFormData({ ...formData, landId: value }); // Update formData
+            setSelectedLand(value);
+            setFormData({ ...formData, landId: value });
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -55,13 +55,8 @@ function CropYieldPredictionForm() {
         e.preventDefault();
         setLoading(true);
         setResponseInfo(null);
-        console.log(formData);
         axios.post(`${import.meta.env.VITE_API_BASE}/cropyield/`, formData)
             .then(response => {
-                console.log("Full Response:", response);
-                console.log("Response Data:", response.data);
-                console.log("Response Data Type:", typeof response.data);
-                console.log("Response Data Keys:", Object.keys(response.data));
                 setResponseInfo(response.data);
                 setError(null);
             })
@@ -75,120 +70,261 @@ function CropYieldPredictionForm() {
             });
     };
 
-    const filteredCrops = formData.season
-  ? seasonCropMap[formData.season] || []
-  : [];
+    const filteredCrops = formData.season ? seasonCropMap[formData.season] || [] : [];
 
-
+    const seasonOptions = [
+        { value: "0", label: "Kharif", icon: "🌧️" },
+        { value: "1", label: "Whole Year", icon: "☀️" },
+        { value: "2", label: "Autumn", icon: "🍂" },
+        { value: "3", label: "Rabi", icon: "❄️" },
+        { value: "4", label: "Summer", icon: "🌞" },
+        { value: "5", label: "Winter", icon: "⛄" }
+    ];
 
     return (
-        <div className="max-w-md md:max-w-3xl lg:max-w-5xl mx-auto p-8 mt-10">
-            <h2 className="mb-6 text-center font-bold text-3xl text-green-700">Crop Yield Prediction</h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                <div >
-                    <label htmlFor="land" className="label text-[18px] font-bold">
-                        Choose Land
-                    </label>
-                    <select
-                        id="land"
-                        name='landId'
-                        value={selectedLand}
-                        onChange={handleChange}
-                        required
-                        className="input"
-                    >
-                        <option value="">Select Land</option>
-                        {userLands.map((land, index) => (
-                            <option key={index} value={land.landId}>{`Land ${index + 1}`}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="year" className="block text-[18px] font-bold">Year:</label>
-                    <input type="number" id="year" name="year" value={formData.year} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder='Enter the Year' required />
-                </div>
-                <div>
-                    <label htmlFor="season" className="block text-[18px] font-bold">
-                        Season
-                    </label>
-                    <select
-                        id="season"
-                        name="season"
-                        value={formData.season}
-                        onChange={handleChange}
-                        className="block w-full px-2 py-2 mt-2 text-md border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                        required
-                    >
-                        <option value="">Select Season</option>
-                        <option value="0">Kharif</option>
-                        <option value="1">Whole Year</option>
-                        <option value="2">Autumn</option>
-                        <option value="3">Rabi</option>
-                        <option value="4">Summer</option>
-                        <option value="5">Winter</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="crop_type" className="block text-[18px] font-bold">
-                        Crop:
-                    </label>
-
-                    <select
-                        id="crop_type"
-                        name="crop"
-                        value={formData.crop}
-                        onChange={handleChange}
-                        className="block w-full px-2 py-2 mt-2 text-md border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                        disabled={!formData.season}
-                        required
-                    >
-                        <option value="">
-                        {formData.season ? "Select Crop" : "Select Season First"}
-                        </option>
-
-                        {filteredCrops.map((crop, index) => (
-                        <option key={index} value={crop}>
-                            {crop.charAt(0).toUpperCase() + crop.slice(1)}
-                        </option>
-                        ))}
-                    </select>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="text-center mb-12">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                        <FaChartLine className="text-5xl text-blue-600" />
+                        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Crop Yield Prediction
+                        </h1>
                     </div>
+                    <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                        Predict your crop production and yield per hectare with AI-powered analytics
+                    </p>
+                </div>
 
-                <div>
-                    <label htmlFor="area" className="block text-[18px] font-bold">Area in hectare:</label>
-                    <input type="number" id="area" name="area" value={formData.area} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder='Enter the Area size in Hectare'required />
-                </div>
-                <div className="col-span-full flex justify-center">
-                    <button type="submit" className="bg-green-500 text-white px-6 py-2 mt-2 rounded-lg">Submit</button>
-                </div>
-            </form>
-            {/* Preloader overlay */}
-      {loading && (
-        <div className="fixed inset-0 bg-sky-500 bg-opacity-50 flex items-center justify-center z-50">
-          <img src="/preloader.gif" alt="Loading..." className="w-[300px]" />
-        </div>
-      )}
-            {responseInfo && (
-                <div className="mt-12 bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-lg shadow-lg border-2 border-green-200">
-                    <h3 className="text-2xl font-bold text-green-700 mb-6 text-center">🌾 Yield Prediction & Production Rate</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                            <p className="text-gray-600 text-sm font-semibold mb-2">📦 Production</p>
-                            <p className="text-3xl font-bold text-blue-600">{responseInfo.production || responseInfo?.data?.production || 'N/A'} <span className="text-lg text-gray-500">kg</span></p>
+                {/* Form Card */}
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border border-blue-100">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Land & Year Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Land Selection */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200">
+                                <label htmlFor="land" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
+                                    <FaMapMarkedAlt className="text-blue-600" /> Select Land Plot
+                                </label>
+                                <select
+                                    id="land"
+                                    name='landId'
+                                    value={selectedLand}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-5 py-4 text-lg border-2 border-blue-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white font-semibold"
+                                >
+                                    <option value="">Choose your land</option>
+                                    {userLands.map((land, index) => (
+                                        <option key={index} value={land.landId}>🌾 Land Plot {index + 1}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Year Input */}
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl border-2 border-purple-200">
+                                <label htmlFor="year" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
+                                    <FaCalendarAlt className="text-purple-600" /> Cultivation Year
+                                </label>
+                                <input
+                                    type="number"
+                                    id="year"
+                                    name="year"
+                                    value={formData.year}
+                                    onChange={handleChange}
+                                    className="w-full px-5 py-4 text-lg border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all font-semibold"
+                                    placeholder='e.g., 2024'
+                                    required
+                                />
+                            </div>
                         </div>
-                        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-                            <p className="text-gray-600 text-sm font-semibold mb-2">📊 Yield</p>
-                            <p className="text-3xl font-bold text-green-600">{responseInfo.yield_per_hectare || responseInfo?.data?.yield_per_hectare || 'N/A'} <span className="text-lg text-gray-500">kg/ha</span></p>
+
+                        {/* Season & Crop Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Season Selection */}
+                            <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-6 rounded-2xl border-2 border-teal-200">
+                                <label htmlFor="season" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
+                                    <FaCloudSun className="text-teal-600" /> Growing Season
+                                </label>
+                                <select
+                                    id="season"
+                                    name="season"
+                                    value={formData.season}
+                                    onChange={handleChange}
+                                    className="w-full px-5 py-4 text-lg border-2 border-teal-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all bg-white font-semibold"
+                                    required
+                                >
+                                    <option value="">Select season</option>
+                                    {seasonOptions.map(season => (
+                                        <option key={season.value} value={season.value}>
+                                            {season.icon} {season.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Crop Selection */}
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200">
+                                <label htmlFor="crop_type" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
+                                    <FaSeedling className="text-green-600" /> Crop Type
+                                </label>
+                                <select
+                                    id="crop_type"
+                                    name="crop"
+                                    value={formData.crop}
+                                    onChange={handleChange}
+                                    className="w-full px-5 py-4 text-lg border-2 border-green-300 rounded-xl focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all bg-white font-semibold disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    disabled={!formData.season}
+                                    required
+                                >
+                                    <option value="">
+                                        {formData.season ? "Select crop" : "Select season first"}
+                                    </option>
+                                    {filteredCrops.map((crop, index) => (
+                                        <option key={index} value={crop}>
+                                            {crop.charAt(0).toUpperCase() + crop.slice(1)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Area Input - Full Width */}
+                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-2xl border-2 border-orange-200">
+                            <label htmlFor="area" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
+                                <FaRulerCombined className="text-orange-600" /> Cultivation Area
+                            </label>
+                            <div className="flex items-center gap-4">
+                                <input
+                                    type="number"
+                                    id="area"
+                                    name="area"
+                                    value={formData.area}
+                                    onChange={handleChange}
+                                    className="flex-1 px-5 py-4 text-lg border-2 border-orange-300 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-semibold"
+                                    placeholder='Enter area size'
+                                    required
+                                />
+                                <span className="px-4 py-4 bg-orange-200 text-orange-800 rounded-xl font-bold text-lg">
+                                    hectares
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="flex justify-center pt-4">
+                            <button
+                                type="submit"
+                                className="group relative px-12 py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-bold rounded-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <GiFarmTractor className="text-2xl group-hover:translate-x-1 transition-transform" />
+                                    Predict Yield & Production
+                                    <FaChartLine className="text-2xl group-hover:scale-110 transition-transform" />
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Loading State */}
+                {loading && (
+                    <div className="fixed inset-0 bg-blue-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white p-10 rounded-3xl shadow-2xl text-center">
+                            <div className="w-24 h-24 relative flex items-center justify-center mx-auto mb-5">
+                                <div className="absolute inset-0 border-4 border-blue-200 rounded-full animate-ping" />
+                                <div className="w-16 h-16 border-4 border-t-transparent border-blue-500 rounded-full animate-spin" />
+                                <div className="absolute w-4 h-4 bg-blue-500 rounded-full animate-pulse" />
+                            </div>
+                            <p className="text-xl font-bold text-gray-800 mb-2">Calculating Yield...</p>
+                            <p className="text-gray-600">Analyzing crop and land data</p>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {error && (
-                <div className="mt-8 text-red-500">
-                    <p>Error: {error}</p>
-                </div>
-            )}
+                {/* Results Card */}
+                {responseInfo && (
+                    <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl shadow-2xl p-8 md:p-12 border-2 border-blue-200">
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-4">
+                                <GiWheat className="text-4xl text-white" />
+                            </div>
+                            <h3 className="text-3xl md:text-4xl font-bold text-blue-700 mb-2">
+                                🌾 Yield Prediction Results
+                            </h3>
+                            <p className="text-gray-600 text-lg">Based on your crop and land parameters</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Total Production */}
+                            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-8 border-blue-500 transform hover:scale-105 transition-transform">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <GiFarmTractor className="text-3xl text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-600 font-semibold text-sm">Total Production</p>
+                                        <p className="text-xs text-gray-500">Expected harvest</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-5xl md:text-6xl font-black text-blue-600">
+                                        {responseInfo.production || responseInfo?.data?.production || 'N/A'}
+                                    </p>
+                                    <span className="text-2xl text-gray-500 font-bold">kg</span>
+                                </div>
+                            </div>
+
+                            {/* Yield Per Hectare */}
+                            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-8 border-green-500 transform hover:scale-105 transition-transform">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                                        <FaChartLine className="text-3xl text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-600 font-semibold text-sm">Yield Rate</p>
+                                        <p className="text-xs text-gray-500">Per hectare</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-5xl md:text-6xl font-black text-green-600">
+                                        {responseInfo.yield_per_hectare || responseInfo?.data?.yield_per_hectare || 'N/A'}
+                                    </p>
+                                    <span className="text-xl text-gray-500 font-bold">kg/ha</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Info */}
+                        <div className="mt-8 bg-white rounded-2xl p-6 border border-blue-200">
+                            <h4 className="font-bold text-gray-800 mb-3 text-lg">📊 Prediction Insights:</h4>
+                            <ul className="space-y-2 text-gray-700">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-1">✓</span>
+                                    <span>Prediction based on historical data and crop patterns</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-1">✓</span>
+                                    <span>Actual yield may vary based on weather and farming practices</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-blue-600 mt-1">✓</span>
+                                    <span>Consider using recommended fertilizers for optimal results</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                    <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-6 text-red-700">
+                        <p className="font-bold mb-1">⚠️ Error</p>
+                        <p>{error}</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
