@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, FeatureGroup, Polygon } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -45,7 +46,19 @@ const MapComponent = () => {
   const latitude = 20.5937;
   const longitude = 78.9629;
   const [zoomLevel, setZoom] = useState(5);
-
+  const isAuthenticated = localStorage.getItem('token');
+  const navigate = useNavigate();
+            
+  useEffect(() => {
+      if (!isAuthenticated) {
+          navigate("/", {
+          state: {
+              shouldShowLoginModal: true,
+          },
+          replace: true,
+          });
+      }
+  }, [isAuthenticated, navigate]);
   // Helper function for LocationIQ reverse geocoding API calls
   const fetchLocationFromAPI = async (lat, lon) => {
     try {
@@ -675,8 +688,8 @@ const handleDeleteLand = async () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Map */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-green-200 mx-0 md:mx-4">
-              <div className="h-[460px] relative ">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-green-200 mx-0 md:mx-4 ">
+              <div className="h-[460px] relative z-0">
                 <MapContainer 
                   center={[latitude, longitude]} 
                   zoom={zoomLevel} 
@@ -694,10 +707,10 @@ const handleDeleteLand = async () => {
                   <div className="absolute bottom-4 left-4 z-[1000]">
                     <button 
                       onClick={locateUser}
-                      className="bg-white hover:bg-green-50 p-3 rounded-xl shadow-xl border-2 border-green-300 transition-all hover:scale-110"
+                      className="bg-white hover:bg-green-50 p-2 rounded-xl shadow-xl border-2 border-green-300 transition-all hover:scale-110"
                       title="Find my location"
                     >
-                      <MdMyLocation className="text-2xl text-green-600" />
+                      <MdMyLocation className="text-lg text-green-600" />
                     </button>
                   </div>
 

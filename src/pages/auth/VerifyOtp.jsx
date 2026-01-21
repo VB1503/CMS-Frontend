@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaPhone, FaCheckCircle, FaClock } from 'react-icons/fa';
 
@@ -13,11 +13,20 @@ const VerifyOtp = () => {
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes timer
   const [canResend, setCanResend] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestFrom = location.state?.requestFrom;
   const userId = localStorage.getItem('userid');
   const phone_number = localStorage.getItem('phone_number');
   const username = localStorage.getItem('first_name');
   const [phonenumber, setPhone] = useState(localStorage.getItem('phone_number'));
   const inputRefs = useRef([]);
+
+  // Redirect to home if accessed manually without proper navigation state
+  useEffect(() => {
+    if (!requestFrom) {
+      navigate('/', { replace: true });
+    }
+  }, [requestFrom, navigate]);
 
   // Format phone number
   useEffect(() => {
@@ -117,7 +126,13 @@ const VerifyOtp = () => {
           localStorage.setItem('is_verified', 'true');
           toast.success('Phone verified successfully!');
           setTimeout(() => {
-            navigate('/');
+            if (requestFrom === 'settings') {
+              navigate("/profile_update", { replace: true });
+            } else if (requestFrom === 'registerform') {
+              navigate("/", { state: { showLoginModal: true, timestamp: Date.now() }, replace: true });
+            } else {
+               navigate("/", { replace: true });
+            }
             window.location.reload();
           }, 1500);
         }

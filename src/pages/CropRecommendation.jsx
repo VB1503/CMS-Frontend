@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 import { FaSeedling, FaFlask, FaLeaf, FaMapMarkerAlt } from 'react-icons/fa';
 import { GiPlantRoots, GiChemicalDrop } from 'react-icons/gi';
 
@@ -12,6 +13,19 @@ const CropRecommendationForm = () => {
   const [userLands, setUserLands] = useState([]);
   const [selectedLand, setSelectedLand] = useState("");
   const [loading, setLoading] = useState(false);
+  const isAuthenticated = localStorage.getItem('token');
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+      if (!isAuthenticated) {
+         navigate("/", {
+            state: {
+              shouldShowLoginModal: true,
+            },
+            replace: true,
+          });
+      }
+    }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const fetchUserLands = async () => {

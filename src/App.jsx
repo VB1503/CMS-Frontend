@@ -4,12 +4,8 @@ import Home from './pages/Home';
 import {ToastContainer} from 'react-toastify'
 import Header from './components/nav/Header';
 import SocialAuth from './pages/social-auth/SocialAuth'
-import "./App.css"
-import "./Register.css"
 import 'react-toastify/dist/ReactToastify.css';
-import "./otp.css"
 import VerifyOtp from './pages/auth/VerifyOtp';
-import Register from './pages/auth/Register';
 import ForgetPassword from './pages/auth/ForgetPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import ProfileUpdate from './components/user/UpdateProfile';
@@ -21,7 +17,8 @@ import CropYieldPredictionForm from './pages/CropYield';
 import IrrigationSystem from './pages/Irrigation';
 import FertilizerRecommendationForm from './pages/fertilizers';
 import FertilizerRecommendationResult from './pages/FertilizerRes';
-import ResetPasswordFromMail from './pages/auth/ResetPasswordFromMail';
+import UserProfile from './pages/UserProfile';
+import NotFound from './pages/NotFound';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Header />}>
@@ -36,11 +33,12 @@ const router = createBrowserRouter(
       <Route path="/predictions" element={<PredictionHistory />} />
       <Route path="/fertilizerres" element={<FertilizerRecommendationResult />} />
       <Route path="/cys" element={<CropYieldPredictionForm />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/profile_update" element={<ProfileUpdate />} />
+      <Route path="/user/settings" element={<ProfileUpdate />} />
+      <Route path="/user" element={<UserProfile />} />
       <Route path='/forget_password' element={<ForgetPassword />} />
-      <Route path='/resetpassword/' element={<ResetPassword />} />
-      <Route path='/resetpassword/:uid/:token' element={<ResetPasswordFromMail />} />
+      <Route path='/user/changepassword/' element={<ResetPassword />} />
+      <Route path='/resetpassword/:uid/:token' element={<ResetPassword />} />
+      <Route path="*" element={<NotFound />} />
     </Route>
   )
 )

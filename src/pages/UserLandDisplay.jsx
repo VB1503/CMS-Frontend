@@ -143,7 +143,7 @@ const LandCard = ({ land, index, onClick, locationName }) => {
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex justify-between items-center mb-3">
           <div className="flex-1">
-            <p className="text-sm text-gray-600">Land {land.landId}</p>
+            <p className="text-sm text-gray-600">Land {index + 1}</p>
             <p className="text-base font-semibold text-gray-800 break-words">
               {locationName || 'Loading location...'}
             </p>
@@ -155,7 +155,7 @@ const LandCard = ({ land, index, onClick, locationName }) => {
         </div>
         
         <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
-          View Details →
+          View Predictions →
         </button>
       </div>
     </div>
@@ -167,6 +167,18 @@ const UserLandsDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [locationNames, setLocationNames] = useState({});
   const navigate = useNavigate();
+  const isAuthenticated = localStorage.getItem('token');
+            
+  useEffect(() => {
+      if (!isAuthenticated) {
+          navigate("/", {
+          state: {
+              showLoginModal: true,
+          },
+          replace: true,
+          });
+      }
+  }, [isAuthenticated, navigate]);
 
   // Derive a readable location name from stored location_details
 const deriveLocationName = (details) => {
@@ -233,9 +245,9 @@ const deriveLocationName = (details) => {
     fetchUserLands();
   }, []);
 
-  const handleLandClick = (landId) => {
+  const handleLandClick = (landId, index) => {
     navigate('/predictions', {
-        state: { landId }
+        state: { landId:landId, landNumber: index + 1, locationName:locationNames[landId] }
     });
     };
 
@@ -283,7 +295,7 @@ const deriveLocationName = (details) => {
               land={land}
               index={index}
               locationName={locationNames[land.landId]}
-              onClick={() => handleLandClick(land.landId)}
+              onClick={() => handleLandClick(land.landId,index)}
             />
           ))}
         </div>

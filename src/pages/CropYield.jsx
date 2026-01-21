@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { seasonCropMap } from './SeasonCropMap';
 import { FaChartLine, FaSeedling, FaCalendarAlt, FaCloudSun, FaMapMarkedAlt, FaRulerCombined } from 'react-icons/fa';
 import { GiFarmTractor, GiWheat } from 'react-icons/gi';
@@ -18,6 +19,19 @@ function CropYieldPredictionForm() {
     });
     const [responseInfo, setResponseInfo] = useState(null);
     const [error, setError] = useState(null);
+    const isAuthenticated = localStorage.getItem('token');
+    const navigate = useNavigate();
+      
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate("/", {
+            state: {
+                shouldShowLoginModal: true,
+            },
+            replace: true,
+            });
+        }
+    }, [isAuthenticated, navigate]);
 
     useEffect(() => {
         const fetchUserLands = async () => {

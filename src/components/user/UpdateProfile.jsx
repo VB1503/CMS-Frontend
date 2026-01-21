@@ -4,7 +4,6 @@ import { FaEdit, FaUser, FaExclamationCircle, FaLock, FaPhone, FaShieldAlt } fro
 import { AiOutlineSetting, AiOutlineDelete, AiOutlineUpload } from 'react-icons/ai';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import VerifyOtp from '../../pages/auth/VerifyOtp';
 import './ProfileUpdate.css';
 
 const ProfileUpdate = () => {
@@ -12,7 +11,7 @@ const ProfileUpdate = () => {
   const [image, setImage] = useState("");
   const [otp, setOtp] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [ph_verify, setVerify] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [Phone, setPhone] = useState(localStorage.getItem('phone_number'));
   const [errors, setErrors] = useState({ email: "", phone_number: "" });
@@ -32,9 +31,15 @@ const ProfileUpdate = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE;
 
   // ==================== Authentication Check ====================
+  
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+       navigate("/", {
+          state: {
+            showLoginModal: true,
+          },
+          replace: true,
+        });
     }
   }, [isAuthenticated, navigate]);
 
@@ -85,7 +90,7 @@ const ProfileUpdate = () => {
           const response = res.data;
           const uid = response['uidb64'];
           const token = response['token'];
-          navigate("/resetpassword/", {
+          navigate("/user/changepassword/", {
               state: {
                 uid,
                 token,
@@ -270,10 +275,10 @@ const ProfileUpdate = () => {
 
       if (res.status === 200) {
         setOtp(true);
-        setVerify(true);
         localStorage.setItem('phone_number', Phone);
         localStorage.setItem('is_verified', false);
         toast.success('OTP sent to verify phone number');
+        navigate('/otp/verify', { state: { requestFrom: 'settings' } });
       }
     } catch (error) {
       setErrors({ ...errors, phone_number: 'This phone number is already taken' });
@@ -305,12 +310,16 @@ const ProfileUpdate = () => {
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Profile Avatar Section */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative">
+              <div className="relative group">
                 <img
                   src={profile || 'https://cdn-icons-png.flaticon.com/128/149/149071.png'}
                   alt="Profile"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-emerald-200 shadow-lg"
+                  onClick={() => setShowProfileModal(true)}
+                  className="w-32 h-32 rounded-full object-cover border-4 border-emerald-200 shadow-lg cursor-pointer transition-transform duration-300 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center cursor-pointer" onClick={() => setShowProfileModal(true)}>
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-semibold">View</span>
+                </div>
                 <label
                   htmlFor="file-upload-input"
                   className="absolute bottom-0 right-0 bg-emerald-500 hover:bg-emerald-600 p-3 rounded-full cursor-pointer text-white shadow-lg transition-all"
@@ -531,11 +540,55 @@ const ProfileUpdate = () => {
         </div>
       )}
 
-      {/* OTP Verification Modal */}
-      {ph_verify && is_verified === "false" && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <VerifyOtp />
+      {/* Profile Image Popup Modal */}
+      {showProfileModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => setShowProfileModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">Profile Picture</h2>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Image Content */}
+            <div className="p-8 flex flex-col items-center">
+              <img
+                src={profile || 'https://cdn-icons-png.flaticon.com/128/149/149071.png'}
+                alt="Profile"
+                className="max-w-sm w-full h-auto rounded-xl object-cover shadow-xl border-4 border-emerald-200"
+              />
+              <div className="mt-6 text-center">
+                <p className="text-gray-600 text-sm mb-4">{first_name} {last_name}</p>
+                <p className="text-gray-500 text-xs">{email}</p>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="border-t border-gray-200 p-6 flex gap-4">
+              <button
+                onClick={RemoveImage}
+                className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <AiOutlineDelete /> Remove
+              </button>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg transition-all"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

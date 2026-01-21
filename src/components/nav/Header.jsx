@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MdOutlineKeyboardDoubleArrowUp, MdOutlineKeyboardDoubleArrowDown } from "react-icons/md";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaCog, FaKey, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
 
 const Header = () => {
-  const [current, setCurrent] = useState('h');
   const [isOpen, setOpen] = useState(true);
   const [isPredictionsOpen, setIsPredictionsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const closeMenu = () => setOpen(true);
   const navigate = useNavigate();
+  const isAuthenticated = localStorage.getItem('token');
   const [username, setUsername] = useState(localStorage.getItem('first_name'));
   const [profile, setProfile] = useState(localStorage.getItem('profile_pic'));
   const [email, setEmail] = useState(localStorage.getItem('email'));
@@ -47,14 +46,14 @@ const Header = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     closeMenu();
-    if (email) {
+    if (isAuthenticated) {
       try {
         const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/v1/auth/changePassword/`, { 'email': email });
         if (res.status === 200) {
           const response = res.data;
           const uid = response['uidb64'];
           const token = response['token'];
-          navigate("/resetpassword", {
+          navigate("/user/changepassword/", {
               state: {
                 uid,
                 token,
@@ -83,10 +82,6 @@ const Header = () => {
     };
   }, [isOpen]);
 
-  const onClick = (e) => {
-    console.log('click ', e);
-    setCurrent(e.key);
-  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -110,12 +105,12 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             {username && (
-              <nav className='hidden lg:flex items-center gap-1'>
+              <nav className='hidden lg:flex items-center gap-1 font-medium'>
                 <Link to='/' className='text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all' onClick={toggleSlide}>
                   Home
                 </Link>
                 <Link to='LSM/' className='text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all' onClick={toggleSlide}>
-                  Register Land
+                  Manage Land
                 </Link>
                 
                 {/* Predictions Dropdown */}
@@ -125,7 +120,7 @@ const Header = () => {
                   onMouseLeave={handlePredictionsMouseLeave}
                 >
                   <button className='text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all flex items-center gap-1'>
-                    Predictions
+                    Make Predictions
                     <IoMdArrowDropdown className={`transform transition-transform ${isPredictionsOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
@@ -145,7 +140,7 @@ const Header = () => {
                 </div>
 
                 <Link to='mylands/' className='text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all' onClick={toggleSlide}>
-                  My Lands
+                  My Farms
                 </Link>
                 <Link to='irrigation/' className='text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all' onClick={toggleSlide}>
                   Irrigation
@@ -155,9 +150,9 @@ const Header = () => {
 
             {/* Right Section - Profile & Auth */}
             <div className='flex items-center gap-4'>
-              {!username ? (
+              {!isAuthenticated ? (
                 <button 
-                  onClick={() => navigate('/', { state: { showLoginModal: true } })} 
+                  onClick={() => navigate('/', { state: { showLoginModal: true, timestamp: Date.now() }, replace: true })} 
                   className="bg-white text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all shadow-lg"
                 >
                   Sign in
@@ -186,7 +181,7 @@ const Header = () => {
 
                       {/* Options */}
                       <div className='py-2'>
-                        <Link to='/profile_update' onClick={closeMenu} className='flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-emerald-50 transition-colors border-b border-gray-100'>
+                        <Link to='/user/settings' onClick={closeMenu} className='flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-emerald-50 transition-colors border-b border-gray-100'>
                           <FaCog className='text-emerald-500 text-lg' />
                           <span className='font-medium'>Manage Account</span>
                         </Link>

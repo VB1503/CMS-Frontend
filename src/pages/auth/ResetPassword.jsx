@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { FaLock, FaMagic, FaRegLightbulb, FaSync, FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -22,7 +22,12 @@ const generatePassword = (baseParts) => {
 const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { uid, token } = location.state || {};
+  const params = useParams();
+  
+  // Get uid and token from either location state (logged in) or URL params (email link)
+  const uid = location.state?.uid || params.uid;
+  const token = location.state?.token || params.token;
+  
   console.log('UID:', uid, 'Token:', token);
   const username = useMemo(() => localStorage.getItem('first_name') || '', []);
   const profile = useMemo(() => localStorage.getItem('profile_pic') || '', []);

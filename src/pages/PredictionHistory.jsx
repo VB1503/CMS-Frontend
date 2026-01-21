@@ -24,13 +24,18 @@ const sameDay = (isoString, filterDate) => {
 const PredictionHistory = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { landId } = location.state || {};
+  const { landId, landNumber, locationName } = location.state || {};
 
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterDate, setFilterDate] = useState('');
-
+  console.log(landId, landNumber, locationName);
+  useEffect(() => {
+        if (!landId) {
+            navigate("/mylands");
+        }
+      }, [navigate]);
   useEffect(() => {
     const fetchUserPredictions = async () => {
       try {
@@ -124,7 +129,8 @@ const PredictionHistory = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Prediction History</h1>
-            <p className="text-gray-600 mt-1">Land ID: {history?.landId}</p>
+            <p className="text-gray-600 mt-1">Land Number: {landNumber}</p>
+            <p className="text-gray-600 mt-1">{locationName}</p>
           </div>
           <div className="flex items-center gap-3">
             <label className="text-sm font-semibold text-gray-700">Filter by date</label>

@@ -7,7 +7,7 @@ import './AuthModal.css';
 
 const RegisterModal = ({ onClose, onSwitchToLogin }) => {
   const REACT_APP_GOOGLE_CLIENT_ID = '937549199111-6qi6odvq95bjh6s2hvkvo3ivcs70n5rd.apps.googleusercontent.com';
-  const REACT_APP_GOGGLE_REDIRECT_URL_ENDPOINT = 'https://vijayanand-cms.vercel.app';
+  const REACT_APP_GOGGLE_REDIRECT_URL_ENDPOINT = import.meta.env.VITE_API_BASE;
   const [username] = useState(localStorage.getItem('first_name'));
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -59,13 +59,11 @@ const RegisterModal = ({ onClose, onSwitchToLogin }) => {
         const result = response.data;
         if (response.status === 201) {
           localStorage.setItem('userid', result.data.id);
-          localStorage.setItem('email', result.data.email);
           localStorage.setItem('phone_number', result.data.phone_number);
           localStorage.setItem('first_name', result.data.first_name);
           localStorage.setItem('last_name', result.data.last_name);
-          localStorage.setItem('profile_pic', result.data.profile_pic);
           onClose();
-          await navigate('/otp/verify');
+          await navigate('/otp/verify', { state: { requestFrom: 'registerform' } });
           toast.success(result.message);
         }
         if (result.message1 === 'Phone number already exists' && result.message2 === 'email already exists') {

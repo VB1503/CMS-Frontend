@@ -11,6 +11,8 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
   const [username] = useState(localStorage.getItem('first_name'));
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const isRegistered = localStorage.getItem('userid');
+  const isAuthenticated = localStorage.getItem('token');
   const [loading, setLoading] = useState(false);
   const [logindata, setLogindata] = useState({
     email: '',
@@ -182,13 +184,13 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
           </button>
         </form>
 
-        {/* Divider */}
+        {/* Google Button */}
+        {!isAuthenticated && (
+        <div>
+            {/* Divider */}
         <div className="auth-divider my-4 md:my-5 text-xs md:text-sm">
           <span>or continue with</span>
         </div>
-
-        {/* Google Button */}
-        {!username && (
           <button 
             type="button" 
             className="auth-btn-ghost auth-google-btn py-2.5 md:py-3 text-sm md:text-base"
@@ -216,9 +218,11 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
             </div>
             <span>Sign in with Google</span>
           </button>
+        </div>
         )}
 
         {/* Switch to Register */}
+        {!isRegistered && (
         <div className="text-center mt-4 md:mt-5 text-xs md:text-sm text-gray-500">
           <span>Don't have an account? </span>
           <button 
@@ -229,6 +233,7 @@ const LoginModal = ({ onClose, onSwitchToRegister }) => {
             Sign up
           </button>
         </div>
+        )}
       </div>
     </div>
   );

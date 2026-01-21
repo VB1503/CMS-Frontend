@@ -12,15 +12,16 @@ const HomePage = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const passwordChanged = location.state?.passwordChanged ?? false;
   const shouldShowLoginModal = location.state?.showLoginModal ?? false;
+  const stateTimestamp = location.state?.timestamp;
 
-  console.log(passwordChanged);
+  console.log(firstName);
   useEffect(() => {
     if (passwordChanged || shouldShowLoginModal) {
       setShowLoginModal(true);
       // Clear the state from history to prevent it from showing again
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [passwordChanged, shouldShowLoginModal]);
+  }, [passwordChanged, shouldShowLoginModal, stateTimestamp]);
 
   const handleGetStarted = () => {
     if (firstName) navigate('/LSM');
@@ -63,7 +64,7 @@ const HomePage = () => {
             plan irrigation and optimize fertilizers — all in one place.
           </p>
           <div className="home-hero__actions">
-            <button className="btn btn-primary z-10" onClick={handleGetStarted}>Get Started</button>
+            <button className="btn btn-outline z-10 " onClick={handleGetStarted}>{firstName ? "Manage Farm Land" : "Get Started"}</button>
              {firstName && (
             <button className="btn btn-outline" onClick={go('/mylands')}>View Predictions</button>
              )}

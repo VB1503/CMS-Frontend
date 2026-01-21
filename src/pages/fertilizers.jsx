@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { FaFlask, FaTemperatureHigh, FaTint, FaLeaf, FaSeedling, FaMapMarkerAlt } from 'react-icons/fa';
 import { GiChemicalDrop, GiPlantRoots, GiFertilizerBag } from 'react-icons/gi';
 import { WiHumidity } from 'react-icons/wi';
@@ -30,7 +31,19 @@ const FertilizerRecommendationForm = () => {
         phosphorous: '',
         potassium: ''
     });
-
+    const isAuthenticated = localStorage.getItem('token');
+    const navigate = useNavigate();
+          
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate("/", {
+            state: {
+                shouldShowLoginModal: true,
+            },
+            replace: true,
+            });
+        }
+    }, [isAuthenticated, navigate]);
     useEffect(() => {
         const fetchUserLands = async () => {
             try {
