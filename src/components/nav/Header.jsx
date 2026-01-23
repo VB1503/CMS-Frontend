@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaCog, FaKey, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
@@ -11,11 +11,57 @@ const Header = () => {
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const closeMenu = () => setOpen(true);
   const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem('token');
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const [username, setUsername] = useState(localStorage.getItem('first_name'));
   const [profile, setProfile] = useState(localStorage.getItem('profile_pic'));
   const [email, setEmail] = useState(localStorage.getItem('email'));
   const [isExpanded, setIsExpanded] = useState(false);
+  const [userLands, setUserLands] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    setUsername(localStorage.getItem('first_name'));
+    setProfile(localStorage.getItem('profile_pic'));
+    setEmail(localStorage.getItem('email'));
+    
+    // Fetch user lands from API
+    const fetchUserLands = async () => {
+      if (token) {
+        try {
+          const userId = localStorage.getItem("userid");
+          const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`, {
+            headers: {
+              Authorization: `Bearer ${JSON.parse(token)}`,
+            },
+          });
+          if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+            setUserLands(response.data);
+          } else {
+            setUserLands([]);
+          }
+        } catch (error) {
+          console.error("Error fetching user lands:", error);
+          setUserLands([]);
+        }
+      } else {
+        setUserLands([]);
+      }
+    };
+
+    fetchUserLands();
+  }, [location]);
+
+  const hasLands = userLands && userLands.length > 0;
+
+  const handlePredictionClick = (path) => {
+    if (!hasLands) {
+      navigate('/LSM', { state: { message: 'Please register a farm land first before making predictions' } });
+    } else {
+      navigate(path);
+    }
+  };
 
   const toggleSlide = () => {
     setIsExpanded(!isExpanded);
@@ -88,6 +134,7 @@ const Header = () => {
     setUsername("");
     setProfile("");
     setEmail("");
+    setIsAuthenticated(false);
   };
 
   return (
@@ -126,15 +173,30 @@ const Header = () => {
                   
                   {isPredictionsOpen && (
                     <div className='absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl z-50 overflow-hidden min-w-max'>
-                      <Link to='crs/' className='block px-6 py-3 text-gray-800 hover:bg-emerald-50 transition-colors border-b' onClick={toggleSlide}>
+                      <button 
+                        onClick={() => handlePredictionClick('crs/')} 
+                        disabled={!hasLands}
+                        className={`block w-full text-left px-6 py-3 transition-colors border-b ${hasLands ? 'text-gray-800 hover:bg-emerald-50 cursor-pointer' : 'text-gray-400 cursor-not-allowed bg-gray-50'}`}
+                        title={!hasLands ? 'Please register a farm land first' : ''}
+                      >
                         🌾 Crop Recommendation
-                      </Link>
-                      <Link to='cys/' className='block px-6 py-3 text-gray-800 hover:bg-emerald-50 transition-colors border-b' onClick={toggleSlide}>
+                      </button>
+                      <button 
+                        onClick={() => handlePredictionClick('cys/')} 
+                        disabled={!hasLands}
+                        className={`block w-full text-left px-6 py-3 transition-colors border-b ${hasLands ? 'text-gray-800 hover:bg-emerald-50 cursor-pointer' : 'text-gray-400 cursor-not-allowed bg-gray-50'}`}
+                        title={!hasLands ? 'Please register a farm land first' : ''}
+                      >
                         📊 Crop Yield Prediction
-                      </Link>
-                      <Link to='fertilizer/' className='block px-6 py-3 text-gray-800 hover:bg-emerald-50 transition-colors' onClick={toggleSlide}>
+                      </button>
+                      <button 
+                        onClick={() => handlePredictionClick('fertilizer/')} 
+                        disabled={!hasLands}
+                        className={`block w-full text-left px-6 py-3 transition-colors ${hasLands ? 'text-gray-800 hover:bg-emerald-50 cursor-pointer' : 'text-gray-400 cursor-not-allowed bg-gray-50'}`}
+                        title={!hasLands ? 'Please register a farm land first' : ''}
+                      >
                         🌱 Fertilizer Recommendation
-                      </Link>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -229,15 +291,30 @@ const Header = () => {
                 
                 {isPredictionsOpen && (
                   <div className='bg-white bg-opacity-10 rounded-lg ml-4 mt-1 overflow-hidden'>
-                    <Link to='crs/' className='block px-4 py-2 text-white hover:bg-white hover:bg-opacity-20 transition-all' onClick={() => { setIsMobileMenuOpen(false); toggleSlide(); }}>
+                    <button 
+                      onClick={() => handlePredictionClick('crs/')} 
+                      disabled={!hasLands}
+                      className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
+                      title={!hasLands ? 'Please register a farm land first' : ''}
+                    >
                       🌾 Crop Recommendation
-                    </Link>
-                    <Link to='cys/' className='block px-4 py-2 text-white hover:bg-white hover:bg-opacity-20 transition-all' onClick={() => { setIsMobileMenuOpen(false); toggleSlide(); }}>
+                    </button>
+                    <button 
+                      onClick={() => handlePredictionClick('cys/')} 
+                      disabled={!hasLands}
+                      className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
+                      title={!hasLands ? 'Please register a farm land first' : ''}
+                    >
                       📊 Crop Yield Prediction
-                    </Link>
-                    <Link to='fertilizer/' className='block px-4 py-2 text-white hover:bg-white hover:bg-opacity-20 transition-all' onClick={() => { setIsMobileMenuOpen(false); toggleSlide(); }}>
+                    </button>
+                    <button 
+                      onClick={() => handlePredictionClick('fertilizer/')} 
+                      disabled={!hasLands}
+                      className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
+                      title={!hasLands ? 'Please register a farm land first' : ''}
+                    >
                       🌱 Fertilizer Recommendation
-                    </Link>
+                    </button>
                   </div>
                 )}
 

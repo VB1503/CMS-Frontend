@@ -32,14 +32,22 @@ const CropRecommendationForm = () => {
       try {
         const userId = localStorage.getItem("userid");
         const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
-        setUserLands(response.data);
+        if (response.data && response.data.length > 0) {
+          setUserLands(response.data);
+        } else {
+          // No lands found, redirect to Manage Land
+          navigate('/LSM', { state: { message: 'Please register a farm land first before making Crop Recommendation' } });
+        }
       } catch (error) {
         console.error("Error fetching user lands:", error);
+        navigate('/LSM', { state: { message: 'Please register a farm land first before making predictions' } });
       }
     };
 
-    fetchUserLands();
-  }, []);
+    if (isAuthenticated) {
+      fetchUserLands();
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -187,7 +195,7 @@ const CropRecommendationForm = () => {
                   onChange={(e) => setPh(e.target.value)}
                   placeholder="e.g., 6.5"
                   required
-                  className="flex-1 px-5 py-4 text-lg border-2 border-teal-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all font-semibold"
+                  className="w-full px-4 py-3 border-2 border-teal-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all font-semibold"
                 />
                 <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
                   <span className="px-3 py-1 bg-red-100 rounded-full">Acidic &lt;7</span>

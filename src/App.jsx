@@ -16,7 +16,6 @@ import CropRecommendationForm from "./pages/CropRecommendation"
 import CropYieldPredictionForm from './pages/CropYield';
 import IrrigationSystem from './pages/Irrigation';
 import FertilizerRecommendationForm from './pages/fertilizers';
-import FertilizerRecommendationResult from './pages/FertilizerRes';
 import UserProfile from './pages/UserProfile';
 import NotFound from './pages/NotFound';
 const router = createBrowserRouter(
@@ -31,7 +30,6 @@ const router = createBrowserRouter(
       <Route path="/fertilizer" element={<FertilizerRecommendationForm />} />
       <Route path="/mylands" element={<UserLandsDisplay />} />
       <Route path="/predictions" element={<PredictionHistory />} />
-      <Route path="/fertilizerres" element={<FertilizerRecommendationResult />} />
       <Route path="/cys" element={<CropYieldPredictionForm />} />
       <Route path="/user/settings" element={<ProfileUpdate />} />
       <Route path="/user" element={<UserProfile />} />

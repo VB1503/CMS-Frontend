@@ -72,8 +72,12 @@ const ProfileUpdate = () => {
 
       if (res.status === 204) {
         localStorage.clear();
-        navigate('/register');
-        window.location.reload(true);
+        navigate('/', { 
+          state: {
+            showRegisterModal: true,
+          },
+          replace: true 
+        });
       }
     } catch (error) {
       toast.error('An error occurred while deleting profile');
@@ -252,11 +256,26 @@ const ProfileUpdate = () => {
         localStorage.setItem('first_name', userData.first_name);
         localStorage.setItem('last_name', userData.last_name);
         toast.success('Profile updated successfully');
-        window.location.reload(true);
+         setUserData({
+            email: userData.email,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+          });
       }
     } catch (error) {
-      toast.error('Error updating profile');
-    }
+        if (!error.response) {
+          // Server not responding / network issue
+          toast.error('Server not responding. Please try again later.');
+        } else if (error.response.status === 400) {
+          // Email already taken
+          setErrors({ ...errors, email: 'This email is already taken' });
+          toast.warning('Email already in use');
+        } else {
+          // Other backend errors
+          toast.error('Error updating profile');
+        }
+      }
+
   };
 
   // ==================== Change Phone Number ====================

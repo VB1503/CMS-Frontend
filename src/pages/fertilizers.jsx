@@ -8,6 +8,7 @@ import { WiHumidity } from 'react-icons/wi';
 const FertilizerRecommendationForm = () => {
     const [fertilizer, setFertilizer] = useState('');
     const [loading, setLoading] = useState(false);
+    const [fetchingWeather, setFetchingWeather] = useState(false);
     const [userLands, setUserLands] = useState([]);
     const [selectedLand, setSelectedLand] = useState("");
     
@@ -49,14 +50,22 @@ const FertilizerRecommendationForm = () => {
             try {
                 const userId = localStorage.getItem("userid");
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
-                setUserLands(response.data);
+                if (response.data && response.data.length > 0) {
+                    setUserLands(response.data);
+                } else {
+                    // No lands found, redirect to Manage Land
+                    navigate('/LSM', { state: { message: 'Please register a farm land first before making Fertilizer Recommendation' } });
+                }
             } catch (error) {
                 console.error("Error fetching user lands:", error);
+                navigate('/LSM', { state: { message: 'Please register a farm land first before making predictions' } });
             }
         };
 
-        fetchUserLands();
-    }, []);
+        if (isAuthenticated) {
+            fetchUserLands();
+        }
+    }, [isAuthenticated, navigate]);
 
     useEffect(() => {
         setFormData(prev => ({
@@ -64,6 +73,58 @@ const FertilizerRecommendationForm = () => {
             crop_type: ""
         }));
     }, [formData.soil_type]);
+
+    const calculateSoilMoisture = (weatherData) => {
+        const humidity = weatherData.humidity || 50;
+        const cloudCover = weatherData.cloud || 50;
+        const precipitation = weatherData.precip_mm || 0;
+        
+        // Calculate soil moisture based on weather factors
+        // Formula: (humidity * 0.4 + cloudCover * 0.3 + precipitation * 5) / 0.7
+        const soilMoisture = Math.min(100, Math.round((humidity * 0.4 + cloudCover * 0.3 + precipitation * 5) / 0.7));
+        return soilMoisture;
+    };
+
+    const handleAutoFetchWeather = async () => {
+        if (!selectedLand) {
+            alert('Please select a land first');
+            return;
+        }
+
+        setFetchingWeather(true);
+        try {
+            const selectedLandData = userLands.find(land => land.landId === parseInt(selectedLand));
+            if (!selectedLandData || !selectedLandData.location_details) {
+                alert('Location details not available for this land');
+                setFetchingWeather(false);
+                return;
+            }
+
+            const { coordinates } = selectedLandData.location_details;
+            
+            // Fetch weather from WeatherAPI
+            const response = await axios.get(
+                `https://api.weatherapi.com/v1/current.json?key=31a8d1a6588a42a78ff115005242702&q=${coordinates.lat},${coordinates.lng}`
+            );
+
+            if (response.data && response.data.current) {
+                const weatherData = response.data.current;
+                const soilMoisture = calculateSoilMoisture(weatherData);
+                
+                setFormData(prev => ({
+                    ...prev,
+                    temperature: Math.round(weatherData.temp_c),
+                    humidity: weatherData.humidity,
+                    moisture: soilMoisture
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching weather:', error);
+            alert('Failed to fetch weather data. Please enter values manually.');
+        } finally {
+            setFetchingWeather(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -142,9 +203,25 @@ const FertilizerRecommendationForm = () => {
 
                                 {/* Environmental Conditions */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                        🌡️ Environmental Conditions
-                                    </h3>
+                                    <div className="flex justify-between mb-4 md:flex-row flex-col gap-2">
+                                        <h3 className="text-xl font-bold text-gray-800">
+                                            🌡️ Environmental Conditions
+                                        </h3>
+                                        {selectedLand && (
+                                            <button
+                                                type="button"
+                                                onClick={handleAutoFetchWeather}
+                                                disabled={fetchingWeather}
+                                                className={`ml-8 md:ml-0 p-2 text-[14px] w-[90px] rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                                                    fetchingWeather
+                                                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                                        : 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white hover:from-teal-600 hover:to-cyan-600'
+                                                }`}
+                                            >
+                                                {fetchingWeather ? '⏳ Fetching...' : 'Auto Fetch'}
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {/* Temperature */}
                                         <div className="bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-xl border-2 border-orange-200">

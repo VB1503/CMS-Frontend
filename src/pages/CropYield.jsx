@@ -38,14 +38,22 @@ function CropYieldPredictionForm() {
             try {
                 const userId = localStorage.getItem("userid");
                 const response = await axios.get(`${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`);
-                setUserLands(response.data);
+                if (response.data && response.data.length > 0) {
+                    setUserLands(response.data);
+                } else {
+                    // No lands found, redirect to Manage Land
+                    navigate('/LSM', { state: { message: 'Please register a farm land first before making Yield prediction' } });
+                }
             } catch (error) {
                 console.error("Error fetching user lands:", error);
+                navigate('/LSM', { state: { message: 'Please register a farm land first before making predictions' } });
             }
         };
 
-        fetchUserLands();
-    }, []);
+        if (isAuthenticated) {
+            fetchUserLands();
+        }
+    }, [isAuthenticated, navigate]);
 
     useEffect(() => {
         setFormData(prev => ({
@@ -207,7 +215,7 @@ function CropYieldPredictionForm() {
                         {/* Area Input - Full Width */}
                         <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-2xl border-2 border-orange-200">
                             <label htmlFor="area" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
-                                <FaRulerCombined className="text-orange-600" /> Cultivation Area
+                                <FaRulerCombined className="text-orange-600" /> Cultivation Area (hectares)
                             </label>
                             <div className="flex items-center gap-4">
                                 <input
@@ -220,9 +228,6 @@ function CropYieldPredictionForm() {
                                     placeholder='Enter area size'
                                     required
                                 />
-                                <span className="px-4 py-4 bg-orange-200 text-orange-800 rounded-xl font-bold text-lg">
-                                    hectares
-                                </span>
                             </div>
                         </div>
 

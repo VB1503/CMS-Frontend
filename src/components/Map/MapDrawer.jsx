@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, FeatureGroup, Polygon } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -48,7 +48,8 @@ const MapComponent = () => {
   const [zoomLevel, setZoom] = useState(5);
   const isAuthenticated = localStorage.getItem('token');
   const navigate = useNavigate();
-            
+  const {message} = useLocation().state || {};
+  const hasShownToast = useRef(false); 
   useEffect(() => {
       if (!isAuthenticated) {
           navigate("/", {
@@ -59,6 +60,16 @@ const MapComponent = () => {
           });
       }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+  if (message && !hasShownToast.current) {
+    toast.info(message);
+    hasShownToast.current = true;
+  }
+}, [message]);
+
+
+
   // Helper function for LocationIQ reverse geocoding API calls
   const fetchLocationFromAPI = async (lat, lon) => {
     try {

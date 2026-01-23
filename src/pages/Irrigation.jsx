@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaWater, FaCloudRain, FaThermometerHalf, FaWind, FaTint, FaClock, FaChartLine } from 'react-icons/fa';
+import { FaWater, FaCloudRain, FaThermometerHalf, FaWind, FaTint, FaClock, FaChartLine, FaMapMarkerAlt } from 'react-icons/fa';
 import { FaDroplet } from "react-icons/fa6";
+
 const Timer = ({ duration, onTimerComplete }) => {
   const [timeLeft, setTimeLeft] = useState(duration);
 
@@ -40,40 +41,161 @@ const IrrigationSystem = () => {
   const [selectedDuration, setSelectedDuration] = useState(30);
   const [soilMoisture, setSoilMoisture] = useState(65);
   const [history, setHistory] = useState([]);
+  const [userLands, setUserLands] = useState([]);
+  const [selectedLand, setSelectedLand] = useState(null);
+  const [loadingLands, setLoadingLands] = useState(false);
+  const [selectedLandDetails, setSelectedLandDetails] = useState(null);
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
+  // Fetch user's lands
   useEffect(() => {
-    const fetchWeatherData = async (latitude, longitude) => {
+    const fetchUserLands = async () => {
       try {
-        const currentWeatherResponse = await axios.get(
-          `https://api.weatherapi.com/v1/current.json?key=31a8d1a6588a42a78ff115005242702&q=${latitude},${longitude}`
+        setLoadingLands(true);
+        const userId = JSON.parse(localStorage.getItem('userid'));
+        if (!userId) {
+          setError('User not authenticated');
+          // Fallback to geolocation
+          useGeolocation();
+          return;
+        }
+        
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE}/landmarks/${userId}/`
         );
-        setWeatherData(currentWeatherResponse.data);
-
-        const forecastResponse = await axios.get(
-          `https://api.weatherapi.com/v1/forecast.json?key=31a8d1a6588a42a78ff115005242702&q=${latitude},${longitude}&days=5`
-        );
-        setForecastData(forecastResponse.data);
-
-        setError(null);
+        
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          setUserLands(response.data);
+          // Auto-select first land
+          setSelectedLand(0);
+          setSelectedLandDetails(response.data[0]);
+          fetchWeatherForLand(response.data[0]);
+        } else {
+          // No lands found, use geolocation
+          useGeolocation();
+        }
       } catch (err) {
-        setError('Failed to fetch weather data');
-        setWeatherData(null);
-        setForecastData(null);
+        console.error('Error fetching lands:', err);
+        // Fallback to geolocation if API fails
+        useGeolocation();
+      } finally {
+        setLoadingLands(false);
       }
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          fetchWeatherData(latitude, longitude);
-        },
-        () => setError('Failed to fetch location')
-      );
-    } else {
-      setError('Geolocation not supported');
-    }
+    const useGeolocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            fetchWeatherByCoordinates(latitude, longitude);
+          },
+          () => setError('Failed to fetch location. Please enable location services.')
+        );
+      } else {
+        setError('Geolocation not supported on this browser');
+      }
+    };
+
+    fetchUserLands();
   }, []);
+
+  const fetchWeatherForLand = async (land) => {
+    try {
+      if (!land || !land.location_details || !land.location_details.coordinates) {
+        setError('Invalid land coordinates');
+        return;
+      }
+
+      const { lat, lng } = land.location_details.coordinates;
+      
+      const currentWeatherResponse = await axios.get(
+        `https://api.weatherapi.com/v1/current.json?key=31a8d1a6588a42a78ff115005242702&q=${lat},${lng}`
+      );
+      setWeatherData(currentWeatherResponse.data);
+      calculateSoilMoisture(currentWeatherResponse.data);
+
+      const forecastResponse = await axios.get(
+        `https://api.weatherapi.com/v1/forecast.json?key=31a8d1a6588a42a78ff115005242702&q=${lat},${lng}&days=5`
+      );
+      setForecastData(forecastResponse.data);
+
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching weather:', err);
+      setError('Failed to fetch weather data for this land');
+      setWeatherData(null);
+      setForecastData(null);
+    }
+  };
+
+  const fetchWeatherByCoordinates = async (latitude, longitude) => {
+    try {
+      const currentWeatherResponse = await axios.get(
+        `https://api.weatherapi.com/v1/current.json?key=31a8d1a6588a42a78ff115005242702&q=${latitude},${longitude}`
+      );
+      setWeatherData(currentWeatherResponse.data);
+      calculateSoilMoisture(currentWeatherResponse.data);
+
+      const forecastResponse = await axios.get(
+        `https://api.weatherapi.com/v1/forecast.json?key=31a8d1a6588a42a78ff115005242702&q=${latitude},${longitude}&days=5`
+      );
+      setForecastData(forecastResponse.data);
+
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching weather:', err);
+      setError('Failed to fetch weather data');
+      setWeatherData(null);
+      setForecastData(null);
+    }
+  };
+
+  const calculateSoilMoisture = (weather) => {
+    if (!weather || !weather.current) return;
+    
+    const humidity = weather.current.humidity || 50;
+    const temp = weather.current.temp_c || 20;
+    const precipitation = weather.current.precip_mm || 0;
+    const cloudCover = weather.current.cloud || 50;
+    
+    // Dynamic formula based on weather factors
+    // Humidity increases moisture, temperature decreases it, rain increases it
+    let moisture = (humidity * 0.6) + (cloudCover * 0.2) + (precipitation * 8) - (temp * 0.5);
+    
+    // Clamp between 0-100
+    moisture = Math.max(0, Math.min(100, Math.round(moisture)));
+    setSoilMoisture(moisture);
+  };
+
+  const handleLandChange = (e) => {
+    const value = e.target.value;
+    
+    if (value === 'current-location') {
+      // Use current location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setIsUsingCurrentLocation(true);
+            setSelectedLand('current-location');
+            setSelectedLandDetails(null);
+            fetchWeatherByCoordinates(latitude, longitude);
+          },
+          () => setError('Failed to fetch your current location. Please enable location services.')
+        );
+      } else {
+        setError('Geolocation not supported on this browser');
+      }
+    } else if (value !== '') {
+      const landIndex = parseInt(value);
+      setSelectedLand(landIndex);
+      setIsUsingCurrentLocation(false);
+      const land = userLands[landIndex];
+      setSelectedLandDetails(land);
+      fetchWeatherForLand(land);
+    }
+  };
 
   const handleIrrigationStart = () => {
     setIsIrrigating(true);
@@ -117,6 +239,83 @@ const IrrigationSystem = () => {
         </div>
         <p className="text-gray-600 text-lg">Smart watering system powered by weather data and soil monitoring</p>
       </div>
+
+      {/* Land Selection */}
+      {userLands.length > 0 && (
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-100">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <FaMapMarkerAlt className="text-blue-600" /> Select Your Land
+            </h2>
+            <select
+              value={selectedLand !== null ? selectedLand : ''}
+              onChange={handleLandChange}
+              className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 font-semibold text-lg"
+            >
+              <option value="">-- Choose a land --</option>
+              {userLands.map((land, index) => (
+                <option key={land.landId} value={index}>
+                  Land {index + 1} - {land.location_details?.area || 'Unknown'}, {land.location_details?.state || 'Unknown'}
+                </option>
+              ))}
+              <option value="current-location">📍 Use My Current Location</option>
+            </select>
+            
+            {selectedLandDetails && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {selectedLandDetails.location_details.road !== 'Data not available' && (
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Road</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.road || 'N/A'}</p>
+                </div>
+                )}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">City/Village</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.area || 'N/A'}</p>
+                </div>
+                {selectedLandDetails.location_details.district !== 'Data not available' && (
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">District</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.district || 'N/A'}</p>
+                </div>
+                )}
+                {selectedLandDetails.location_details.state !== 'Data not available' && (
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-300">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">State</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.state || 'N/A'}</p>
+                </div>
+                )}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Country</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.country || 'N/A'}</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Postcode</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedLandDetails.location_details?.postcode || 'N/A'}</p>
+                </div>
+              </div>
+            )}
+            
+            {isUsingCurrentLocation && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-gray-700 font-semibold flex items-center gap-2">
+                  <FaMapMarkerAlt className="text-blue-600" /> Using your current location for weather data
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {userLands.length === 0 && (
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="bg-blue-50 rounded-2xl shadow-lg p-6 border border-blue-200">
+            <p className="text-gray-700 font-semibold flex items-center gap-2">
+              <FaMapMarkerAlt className="text-blue-600" /> Using your current location for weather data
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

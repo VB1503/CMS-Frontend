@@ -12,6 +12,7 @@ const HomePage = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const passwordChanged = location.state?.passwordChanged ?? false;
   const shouldShowLoginModal = location.state?.showLoginModal ?? false;
+  const shouldShowRegisterModal = location.state?.showRegisterModal ?? false;
   const stateTimestamp = location.state?.timestamp;
 
   console.log(firstName);
@@ -21,7 +22,12 @@ const HomePage = () => {
       // Clear the state from history to prevent it from showing again
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [passwordChanged, shouldShowLoginModal, stateTimestamp]);
+    if (shouldShowRegisterModal) {
+      setShowRegisterModal(true);
+      // Clear the state from history to prevent it from showing again
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [passwordChanged, shouldShowLoginModal, shouldShowRegisterModal, stateTimestamp]);
 
   const handleGetStarted = () => {
     if (firstName) navigate('/LSM');
@@ -91,22 +97,22 @@ const HomePage = () => {
         <section className="features" aria-labelledby="features-title">
           <h2 id="features-title" className="section-title">What You Can Do</h2>
           <div className="features-grid">
-            <FeatureCard title="Crop Recommendation" description="Get the best crop suggestions for your land based on soil, weather and season." onClick={go('/crs')}>
+            <FeatureCard title="Crop Recommendation" description="Get AI-powered crop suggestions based on soil NPK levels, pH, temperature and humidity." onClick={go('/crs')}>
               <IconCrop />
             </FeatureCard>
-            <FeatureCard title="Yield Prediction" description="Estimate expected yields for different crops to plan investments confidently." onClick={go('/cys')}>
+            <FeatureCard title="Yield Prediction" description="Predict crop production and yield per hectare based on season, crop type and area." onClick={go('/cys')}>
               <IconYield />
             </FeatureCard>
-            <FeatureCard title="Fertilizer Optimization" description="Optimize fertilizer type and quantity to maximize output and reduce cost." onClick={go('/fertilizer')}>
+            <FeatureCard title="Fertilizer Recommendation" description="Get fertilizer suggestions based on soil type, crop selection and NPK levels." onClick={go('/fertilizer')}>
               <IconFertilizer />
             </FeatureCard>
-            <FeatureCard title="Irrigation Planner" description="Plan irrigation schedules using local weather and crop requirements." onClick={go('/irrigation')}>
+            <FeatureCard title="Irrigation Planner" description="View real-time weather data and forecast to plan your irrigation schedule." onClick={go('/irrigation')}>
               <IconIrrigation />
             </FeatureCard>
-            <FeatureCard title="Map Your Land" description="Draw and save your land boundaries to keep predictions precise." onClick={go('/LSM')}>
+            <FeatureCard title="Map Your Land" description="Draw and save your farm boundaries on an interactive map with location details." onClick={go('/LSM')}>
               <IconMap />
             </FeatureCard>
-            <FeatureCard title="Prediction History" description="Review, compare and export all your past predictions in one place." onClick={go('/mylands')}>
+            <FeatureCard title="Prediction History" description="Review and export all your past prediction records for each registered land." onClick={go('/mylands')}>
               <IconHistory />
             </FeatureCard>
           </div>
@@ -118,13 +124,13 @@ const HomePage = () => {
             <StepCard title="Map Your Land" description="Mark your field on the map or select an existing saved land.">
               <IconMap />
             </StepCard>
-            <StepCard title="Enter Conditions" description="Provide soil, season and local details or let us auto-fetch weather.">
+            <StepCard title="Enter Conditions" description="Provide soil, season and local details for accurate predictions.">
               <IconInputs />
             </StepCard>
             <StepCard title="Get Predictions" description="Receive crop, yield, irrigation and fertilizer recommendations instantly.">
               <IconLightning />
             </StepCard>
-            <StepCard title="Act & Review" description="Export, share and revisit results in your prediction history.">
+            <StepCard title="Act & Review" description="Export predictions and revisit all results in your prediction history.">
               <IconHistory />
             </StepCard>
           </div>
