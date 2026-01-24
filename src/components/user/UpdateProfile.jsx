@@ -4,7 +4,6 @@ import { FaEdit, FaUser, FaExclamationCircle, FaLock, FaPhone, FaShieldAlt } fro
 import { AiOutlineSetting, AiOutlineDelete, AiOutlineUpload } from 'react-icons/ai';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import './ProfileUpdate.css';
 
 const ProfileUpdate = () => {
   // ==================== State Management ====================
@@ -326,7 +325,7 @@ const ProfileUpdate = () => {
             <FaUser className="text-emerald-500" /> Profile Information
           </h2>
           
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex flex-col md:flex-row gap-5 md:gap-8">
             {/* Profile Avatar Section */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative group">
