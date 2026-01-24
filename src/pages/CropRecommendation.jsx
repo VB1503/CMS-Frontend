@@ -79,8 +79,8 @@ const CropRecommendationForm = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <FaSeedling className="text-5xl text-green-600" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <FaSeedling className="text-2xl md:text-5xl text-green-600" />
+            <h1 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               Crop Recommendation
             </h1>
           </div>
@@ -212,9 +212,9 @@ const CropRecommendationForm = () => {
                 className="group relative px-12 py-5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-lg font-bold rounded-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 <span className="flex items-center gap-3">
-                  <GiPlantRoots className="text-2xl group-hover:rotate-12 transition-transform" />
+                  <GiPlantRoots className="hidden md:block text-2xl group-hover:rotate-12 transition-transform" />
                   Analyze & Recommend Crops
-                  <FaLeaf className="text-2xl group-hover:-rotate-12 transition-transform" />
+                  <FaLeaf className="hidden md:block text-2xl group-hover:-rotate-12 transition-transform" />
                 </span>
               </button>
             </div>

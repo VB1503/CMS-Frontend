@@ -166,8 +166,8 @@ const FertilizerRecommendationForm = () => {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <GiFertilizerBag className="text-5xl text-teal-600" />
-                        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                        <GiFertilizerBag className="hidden md:block text-xl md:text-5xl text-teal-600" />
+                        <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
                             Fertilizer Recommendation
                         </h1>
                     </div>
@@ -204,7 +204,7 @@ const FertilizerRecommendationForm = () => {
                                 {/* Environmental Conditions */}
                                 <div>
                                     <div className="flex justify-between mb-4 md:flex-row flex-col gap-2">
-                                        <h3 className="text-xl font-bold text-gray-800">
+                                        <h3 className="text-lg md:text-xl font-bold text-gray-800">
                                             🌡️ Environmental Conditions
                                         </h3>
                                         {selectedLand && (
@@ -326,7 +326,7 @@ const FertilizerRecommendationForm = () => {
 
                                 {/* NPK Values */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                                         <GiChemicalDrop className="text-purple-600" /> Soil Nutrient Levels (NPK)
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -393,9 +393,9 @@ const FertilizerRecommendationForm = () => {
                                         className="group px-12 py-5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white text-lg font-bold rounded-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300"
                                     >
                                         <span className="flex items-center gap-3">
-                                            <FaFlask className="text-2xl group-hover:rotate-12 transition-transform" />
+                                            <FaFlask className="hidden md:block text-2xl group-hover:rotate-12 transition-transform" />
                                             Get Fertilizer Recommendation
-                                            <GiFertilizerBag className="text-2xl group-hover:-rotate-12 transition-transform" />
+                                            <GiFertilizerBag className="hidden md:block text-2xl group-hover:-rotate-12 transition-transform" />
                                         </span>
                                     </button>
                                 </div>

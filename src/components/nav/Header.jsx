@@ -292,7 +292,7 @@ const Header = () => {
                 {isPredictionsOpen && (
                   <div className='bg-white bg-opacity-10 rounded-lg ml-4 mt-1 overflow-hidden'>
                     <button 
-                      onClick={() => handlePredictionClick('crs/')} 
+                      onClick={() => {setIsMobileMenuOpen(false); toggleSlide(); handlePredictionClick('crs/')}} 
                       disabled={!hasLands}
                       className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
                       title={!hasLands ? 'Please register a farm land first' : ''}
@@ -300,7 +300,7 @@ const Header = () => {
                       🌾 Crop Recommendation
                     </button>
                     <button 
-                      onClick={() => handlePredictionClick('cys/')} 
+                      onClick={() => {setIsMobileMenuOpen(false); toggleSlide(); handlePredictionClick('cys/')}} 
                       disabled={!hasLands}
                       className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
                       title={!hasLands ? 'Please register a farm land first' : ''}
@@ -308,7 +308,7 @@ const Header = () => {
                       📊 Crop Yield Prediction
                     </button>
                     <button 
-                      onClick={() => handlePredictionClick('fertilizer/')} 
+                      onClick={() => {setIsMobileMenuOpen(false); toggleSlide(); handlePredictionClick('fertilizer/')}} 
                       disabled={!hasLands}
                       className={`block w-full text-left px-4 py-2 transition-all ${hasLands ? 'text-white hover:bg-white hover:bg-opacity-20 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'}`}
                       title={!hasLands ? 'Please register a farm land first' : ''}

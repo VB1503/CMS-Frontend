@@ -110,7 +110,7 @@ function CropYieldPredictionForm() {
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center gap-3 mb-4">
                         <FaChartLine className="text-5xl text-blue-600" />
-                        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <h1 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Crop Yield Prediction
                         </h1>
                     </div>
@@ -217,14 +217,14 @@ function CropYieldPredictionForm() {
                             <label htmlFor="area" className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-3">
                                 <FaRulerCombined className="text-orange-600" /> Cultivation Area (hectares)
                             </label>
-                            <div className="flex items-center gap-4">
+                            <div className="">
                                 <input
                                     type="number"
                                     id="area"
                                     name="area"
                                     value={formData.area}
                                     onChange={handleChange}
-                                    className="flex-1 px-5 py-4 text-lg border-2 border-orange-300 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-semibold"
+                                    className="w-full px-5 py-4 text-lg border-2 border-orange-300 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all font-semibold"
                                     placeholder='Enter area size'
                                     required
                                 />
@@ -235,12 +235,12 @@ function CropYieldPredictionForm() {
                         <div className="flex justify-center pt-4">
                             <button
                                 type="submit"
-                                className="group relative px-12 py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-bold rounded-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                                className="px-4 md:px-12 py-4 md:py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-bold rounded-2xl shadow-2xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
                             >
                                 <span className="flex items-center gap-3">
-                                    <GiFarmTractor className="text-2xl group-hover:translate-x-1 transition-transform" />
+                                    <GiFarmTractor className="hidden md:block text-xl md:text-3xl group-hover:translate-x-1 transition-transform" />
                                     Predict Yield & Production
-                                    <FaChartLine className="text-2xl group-hover:scale-110 transition-transform" />
+                                    <FaChartLine className="hidden md:block text-2xl group-hover:scale-110 transition-transform" />
                                 </span>
                             </button>
                         </div>
@@ -288,7 +288,7 @@ function CropYieldPredictionForm() {
                                     </div>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                    <p className="text-5xl md:text-6xl font-black text-blue-600">
+                                    <p className="text-2xl md:text-4xl font-black text-blue-600">
                                         {responseInfo.production || responseInfo?.data?.production || 'N/A'}
                                     </p>
                                     <span className="text-2xl text-gray-500 font-bold">kg</span>
@@ -307,7 +307,7 @@ function CropYieldPredictionForm() {
                                     </div>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                    <p className="text-5xl md:text-6xl font-black text-green-600">
+                                    <p className="text-2xl md:text-4xl font-black text-green-600">
                                         {responseInfo.yield_per_hectare || responseInfo?.data?.yield_per_hectare || 'N/A'}
                                     </p>
                                     <span className="text-xl text-gray-500 font-bold">kg/ha</span>
